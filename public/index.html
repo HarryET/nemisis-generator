@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemesis Locator 3000</title>
+    <!-- Add Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include Alpine.js via CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="nemesisApp()" class="bg-gray-100 font-sans flex flex-col min-h-screen">
+    <div class="main-container flex flex-col flex-grow">
+        <div class="content-wrapper max-w-4xl mx-auto my-8 p-6 bg-white shadow-sm text-center">
+            <h1 class="text-2xl font-semibold text-gray-800 mb-2">Nemesis Locator 3000</h1>
+            <p class="text-gray-600 mb-8 text-lg">Find out where your arch-enemy is plotting right now!</p>
+
+            <form @submit.prevent="findNemesis" class="input-form mb-6">
+                <div class="relative border border-gray-300 overflow-hidden bg-white mb-4">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="input-icon w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                    </span>
+                    <input type="text" x-model="username" :placeholder="placeholderText" required :disabled="loading"
+                           class="w-full border-none py-3 pl-10 pr-3 text-base outline-none bg-transparent disabled:bg-gray-100">
+                </div>
+                <button type="submit" :disabled="loading"
+                        class="w-full bg-blue-600 text-white border-none px-6 py-3 cursor-pointer text-base font-medium transition-colors duration-200 ease-in-out hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed">
+                    <span x-show="!loading">Locate Nemesis</span>
+                    <!-- Loading state inside button -->
+                    <span x-show="loading" class="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-r-2 border-white"></span>
+                </button>
+            </form>
+
+            <!-- Loading Animation Area -->
+            <div x-show="loading" x-cloak class="mt-8 p-6 min-h-[100px]">
+                <div id="country-emoji" class="text-6xl mb-4" x-text="currentEmoji"></div>
+                <div id="loading-text" class="text-gray-600" x-text="loadingText"></div>
+            </div>
+
+            <!-- Result Area -->
+            <div x-show="result.location && !loading" x-cloak
+                 class="result-area mt-8 p-6 bg-gray-100 border border-gray-200 min-h-[50px] text-left leading-relaxed">
+                <div class="result-text" x-html="getResultText()"></div>
+                <button class="reason-button bg-none border-none text-blue-600 underline cursor-pointer text-sm mt-4 p-0 hover:text-blue-800"
+                        @click="showReason = !showReason" x-show="result.reason && !showReason">
+                    Why are they there?
+                </button>
+                <div class="reason-text mt-4 pt-4 border-t border-dashed border-gray-300 text-gray-600 italic" x-show="showReason" x-transition x-text="getReasonText()"></div>
+            </div>
+
+            <!-- Error Area -->
+            <div class="error-area mt-8 p-4 bg-red-50 border border-red-200 text-red-700 font-medium min-h-[50px] text-left leading-relaxed"
+                 x-show="error" x-text="error" x-cloak>
+            </div>
+        </div>
+
+        <!-- Updated CTA Section -->
+        <div class="cta-section mt-auto pt-8">
+            <a href="#" class="block bg-[#0078D4] hover:bg-[#005ea6] text-white py-4 px-6 text-center transition-colors duration-200 ease-in-out flex items-center justify-center space-x-2 w-full">
+                <span class="text-sm">Hosted on</span>
+                <img src="/icon.svg" alt="Container Inc Logo" class="h-5 filter brightness-0 invert">
+                <span class="font-semibold">Container Inc.</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Data needed for animation (can be fetched or embedded)
+        const countryEmojis = { "Japan": "🇯🇵", "Italy": "🇮🇹", "France": "🇫🇷", "India": "🇮🇳", "Brazil": "🇧🇷", "Norway": "🇳🇴", "South Korea": "🇰🇷", "Greece": "🇬🇷", "Canada": "🇨🇦", "Australia": "🇦🇺", "Spain": "🇪🇸", "China": "🇨🇳", "Germany": "🇩🇪", "Mexico": "🇲🇽", "Thailand": "🇹🇭", "Sweden": "🇸🇪", "New Zealand": "🇳🇿", "Russia": "🇷🇺", "Turkey": "🇹🇷", "Poland": "🇵🇱", "Portugal": "🇵🇹", "Switzerland": "🇨🇭", "Austria": "🇦🇹", "Belgium": "🇧🇪", "Czech Republic": "🇨🇿", "Denmark": "🇩🇰", "Finland": "🇫🇮", "Hungary": "🇭🇺", "Ireland": "🇮🇪", "Israel": "🇮🇱", "Netherlands": "🇳🇱", "United Kingdom": "🇬🇧" };
+        const allEmojis = Object.values(countryEmojis);
+        const loadingMessages = [
+            "Analyzing tweets",
+            "Checking follower count",
+            "Scanning for villainous vibes",
+            "Calculating nemesis potential",
+            "Deploying reconnaissance drone"
+        ];
+
+        const exampleHandles = [
+            '@theharryet',
+            '@fdotinc',
+            '@ruslanjabari',
+            '@FurqanR',
+        ];
+
+        function nemesisApp() {
+            return {
+                username: '',
+                placeholderText: '',
+                loading: false,
+                result: { username: '', venue: '', location: '', reason: '' },
+                error: '',
+                showReason: false,
+                // Animation state
+                loadingText: '',
+                currentEmoji: '',
+                _animationInterval: null,
+
+                init() {
+                    const randomIndex = Math.floor(Math.random() * exampleHandles.length);
+                    this.placeholderText = `Enter your X/Twitter handle (e.g., ${exampleHandles[randomIndex]})`;
+                },
+
+                async findNemesis() {
+                    let handle = this.username.trim().replace(/^@/, '');
+                    if (!handle) {
+                        this.error = 'Please enter a username.';
+                        this.result = {};
+                        this.loading = false;
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.error = '';
+                    this.result = {};
+                    this.showReason = false;
+                    this.startLoadingAnimation();
+
+                    try {
+                        // 1. Get Nemesis data
+                        const nemesisResponse = await fetch(`/nemesis?username=${encodeURIComponent(handle)}`);
+                        const nemesisData = await nemesisResponse.json();
+
+                        if (!nemesisResponse.ok) {
+                            throw new Error(nemesisData.error || `Server error: ${nemesisResponse.status}`);
+                        }
+
+                        // 2. Client-side check (Direct fetch - **LIKELY TO FAIL DUE TO CORS**)
+                        const profileUrl = `https://x.com/${handle}`;
+
+                        try {
+                           console.log(`Checking profile directly: ${profileUrl}`);
+                           const profileResponse = await fetch(profileUrl, { method: 'HEAD', mode: 'cors' });
+
+                           console.log(`Profile check status: ${profileResponse.status}`);
+                           if (profileResponse.status === 404) {
+                               throw new Error(`X/Twitter user @${handle} not found.`);
+                           } else if (!profileResponse.ok && profileResponse.status !== 0) {
+                               // console.warn(`Profile check for @${handle} returned status ${profileResponse.status}`);
+                           }
+                        } catch (profileError) {
+                            // Direct fetch likely fails here due to CORS
+                            if (profileError.message.includes('not found')) {
+                                throw profileError; // Re-throw if it looks like a 404 based on message
+                            } else {
+                                // Log CORS or network errors but proceed cautiously
+                                console.warn(`Direct profile check for @${handle} failed (likely CORS):`, profileError);
+                                // Optionally, you could set a flag here to indicate the check was inconclusive
+                            }
+                        }
+
+                        // 3. If checks pass/didn't fail conclusively, show results
+                        this.result = nemesisData;
+
+                    } catch (err) {
+                        console.error('Processing error:', err);
+                        this.error = err.message || 'An unexpected error occurred.';
+                    } finally {
+                        this.stopLoadingAnimation();
+                        this.loading = false;
+                    }
+                },
+
+                startLoadingAnimation() {
+                    let emojiIndex = 0;
+                    let textIndex = 0;
+                    let globeIndex = 0;
+                    const globeRotation = ["🌍", "🌎", "🌏"];
+                    let phase = 'globe'; // 'globe' or 'flags'
+                    let globeEndTime = Date.now() + 1500; // Spin globe for 1.5s
+
+                    this.currentEmoji = globeRotation[0];
+                    this.loadingText = loadingMessages[0] + '...';
+
+                    clearInterval(this._animationInterval);
+                    this._animationInterval = setInterval(() => {
+                        if (phase === 'globe') {
+                            if (Date.now() < globeEndTime) {
+                                globeIndex = (globeIndex + 1) % globeRotation.length;
+                                this.currentEmoji = globeRotation[globeIndex];
+                            } else {
+                                phase = 'flags';
+                                emojiIndex = Math.floor(Math.random() * allEmojis.length); // Start random
+                            }
+                        }
+
+                        if (phase === 'flags') {
+                            this.currentEmoji = allEmojis[emojiIndex];
+                            this.loadingText = loadingMessages[textIndex] + '.'.repeat((emojiIndex % 3) + 1);
+
+                            emojiIndex = (emojiIndex + 1) % allEmojis.length;
+                            if (emojiIndex % 5 === 0) { // Change text less frequently
+                                textIndex = (textIndex + 1) % loadingMessages.length;
+                            }
+                        }
+                    }, 150); // Faster interval
+                },
+
+                stopLoadingAnimation() {
+                    clearInterval(this._animationInterval);
+                    this.currentEmoji = '';
+                    this.loadingText = '';
+                },
+
+                getResultText() {
+                    if (!this.result.location) return '';
+                    // Use Tailwind classes within the HTML string for styling strong tags
+                    return `Watch out, <strong class="font-semibold text-blue-800">@${this.result.username}</strong>!<br>Your nemesis is currently at <strong class="font-semibold text-blue-800">${this.result.venue}</strong> in <strong class="font-semibold text-blue-800">${this.result.location}</strong>.`;
+                },
+
+                getReasonText() {
+                    if (!this.result.reason) return '';
+                    return `It's probably because ${this.result.reason}`;
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
