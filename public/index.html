@@ -10,14 +10,15 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+        html, body {
+            height: 100%;
+        }
     </style>
 </head>
-<body x-data="nemesisApp()" class="bg-gray-100 font-sans flex flex-col min-h-screen">
-    <div class="main-container flex flex-col flex-grow">
-
-        <!-- Moved CTA Section to the top -->
-        <!-- Removed mt-auto, added mb-8 for spacing -->
-        <div class="cta-section mb-8">
+<body x-data="nemesisApp()" class="bg-gray-100 font-sans flex flex-col h-full">
+    <div class="main-container flex flex-col">
+        <!-- Make CTA sticky, adjust spacing -->
+        <div class="cta-section sticky top-0 z-10 mb-8">
             <a href="#" class="block bg-[#0078D4] hover:bg-[#005ea6] text-white py-4 px-6 text-center transition-colors duration-200 ease-in-out flex items-center justify-center space-x-2 w-full">
                 <span class="text-sm">Hosted on</span>
                 <img src="/icon.svg" alt="Container Inc Logo" class="h-5 filter brightness-0 invert">
@@ -25,8 +26,8 @@
             </a>
         </div>
 
-        <!-- Content Wrapper -->
-        <div class="content-wrapper max-w-4xl mx-auto my-8 p-6 bg-white shadow-sm text-center">
+        <!-- Adjust Content Wrapper margin -->
+        <div class="content-wrapper max-w-4xl mx-auto mt-4 mb-8 p-6 bg-white shadow-sm text-center">
             <h1 class="text-2xl font-semibold text-gray-800 mb-2">Nemesis Locator 3000</h1>
             <p class="text-gray-600 mb-8 text-lg">Find out where your arch-enemy is plotting right now!</p>
 
