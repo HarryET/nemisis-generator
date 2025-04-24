@@ -14,6 +14,18 @@
 </head>
 <body x-data="nemesisApp()" class="bg-gray-100 font-sans flex flex-col min-h-screen">
     <div class="main-container flex flex-col flex-grow">
+
+        <!-- Moved CTA Section to the top -->
+        <!-- Removed mt-auto, added mb-8 for spacing -->
+        <div class="cta-section mb-8">
+            <a href="#" class="block bg-[#0078D4] hover:bg-[#005ea6] text-white py-4 px-6 text-center transition-colors duration-200 ease-in-out flex items-center justify-center space-x-2 w-full">
+                <span class="text-sm">Hosted on</span>
+                <img src="/icon.svg" alt="Container Inc Logo" class="h-5 filter brightness-0 invert">
+                <span class="font-semibold">Container Inc.</span>
+            </a>
+        </div>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper max-w-4xl mx-auto my-8 p-6 bg-white shadow-sm text-center">
             <h1 class="text-2xl font-semibold text-gray-800 mb-2">Nemesis Locator 3000</h1>
             <p class="text-gray-600 mb-8 text-lg">Find out where your arch-enemy is plotting right now!</p>
@@ -59,14 +71,6 @@
             </div>
         </div>
 
-        <!-- Updated CTA Section -->
-        <div class="cta-section mt-auto pt-8">
-            <a href="#" class="block bg-[#0078D4] hover:bg-[#005ea6] text-white py-4 px-6 text-center transition-colors duration-200 ease-in-out flex items-center justify-center space-x-2 w-full">
-                <span class="text-sm">Hosted on</span>
-                <img src="/icon.svg" alt="Container Inc Logo" class="h-5 filter brightness-0 invert">
-                <span class="font-semibold">Container Inc.</span>
-            </a>
-        </div>
     </div>
 
     <script>
